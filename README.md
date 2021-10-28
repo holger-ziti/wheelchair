@@ -31,12 +31,12 @@ export ROS_DOMAIN_ID=100
 ### build code
 ```console
 cd ~/ws
-colcon build
+colcon build --packages-select force_joystick
 ```
 
 ### run code
 ```console
-ros2 launch force_joystick two_analog_in.launch.py
+ros2 launch force_joystick two_analog_in_eloquent.launch.py
 ```
 
 
