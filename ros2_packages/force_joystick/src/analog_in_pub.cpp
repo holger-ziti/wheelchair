@@ -88,9 +88,9 @@ private:
     int my_int = int_param.as_int();
     //int my_int = this->my_int;
     
-    //int iVolt;
-    //iVolt = readAnalog(my_int); 
-    //message.data = iVolt;
+    int iVolt;
+    iVolt = readAnalog(my_int); 
+    message.data = iVolt;
     
     /* use randomly number generate int between 1 and 10: */
     //int iRand; 

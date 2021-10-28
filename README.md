@@ -28,7 +28,7 @@ source /home/debian/ws/install/setup.bash
 export ROS_DOMAIN_ID=100
 ```
 
-### build code
+### build code (maybe twice)
 ```console
 cd ~/ws
 colcon build --packages-select force_joystick
