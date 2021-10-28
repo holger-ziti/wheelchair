@@ -67,6 +67,10 @@ class CommandVelocityFromForcesPublisher(Node):
         self.cmd.linear.x = self.cmd.linear.x + self.force_1 * self.timer_period * self.factor_1
         #if abs(self.force_2) > self.force_threshold:
         self.cmd.angular.z = self.cmd.angular.z + self.force_2 * self.timer_period * self.factor_2
+
+        self.cmd.linear.x = (self.force_1 - 745) * 0.01
+        self.cmd.angular.z = (self.force_2 - 745) * 0.01
+
         self.publisher_.publish(self.cmd)
 
         #self.get_logger().info(f'cmd.linear.x start: {self.cmd.linear.x}')
