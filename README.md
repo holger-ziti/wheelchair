@@ -44,10 +44,22 @@ ros2 launch force_joystick two_analog_in_eloquent.launch.py
  - cmd_vel needs some time
  
 ### use joystick for sim
- - schwarzes kabel am kraftsensor nach hinten
+
 ```console
 ros2 launch turtlebot3_gazebo empty_world.launch.py
 ```
+
+### wheelchair sim (PC)
+ - schwarzes kabel am kraftsensor nach hinten
+```console
+git clone https://github.com/5i0770/mobile_robot_gym.git
+ln -s ~/git/mobile_robot_gym/ros2_workspace/src/wheelchair_gazebo ~/dev_ws/src
+```
+
+
+
+
+
  
 
 

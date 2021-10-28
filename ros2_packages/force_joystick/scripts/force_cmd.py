@@ -75,7 +75,7 @@ class CommandVelocityFromForcesPublisher(Node):
         self.cmd.angular.z = self.cmd.angular.z + self.force_2 * self.timer_period * self.factor_2
 
         self.cmd.linear.x = (self.force_1 - self.mean_1) * 0.01
-        self.cmd.angular.z = -(self.force_2 - self.mean_2) * 0.01
+        self.cmd.angular.z = (self.force_2 - self.mean_2) * 0.01
 
         self.number_of_initial_samples
 
