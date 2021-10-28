@@ -40,5 +40,14 @@ ros2 launch force_joystick two_analog_in_eloquent.launch.py
 ```
 
 ### do nothing for 30 sec
+ - offset is calculated
+ - cmd_vel needs some time
+ 
+### use joystick for sim
+ - schwarzes kabel am kraftsensor nach hinten
+```console
+ros2 launch turtlebot3_gazebo empty_world.launch.py
+```
+ 
 
 

@@ -29,8 +29,8 @@ def generate_launch_description():
             node_executable='force_cmd.py',
             node_name='test3',
             parameters=[
-                {'raw_voltage_number_1': 0},
-                {'raw_voltage_number_2': 1}
+                {'raw_voltage_number_1': 1},
+                {'raw_voltage_number_2': 0}
             ],
             output='screen',
             emulate_tty=True
