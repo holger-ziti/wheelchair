@@ -47,15 +47,21 @@ class CommandVelocityFromForcesPublisher(Node):
 
         self.force_threshold = 0.1
 
+        # todo: change offset handling
+        self.number_of_initial_samples = 100
+        self.initial_samples_counter = 0
+        self.zero_value_list_1 = []
+        self.zero_value_list_2 = []
+        self.mean_1 = 0.0
+        self.mean_2 = 0.0
+
     def listener_callback_1(self, msg):
         #self.get_logger().info('I heard: "%s"' % msg.data)
-        #self.force_1 = msg.data # todo: delete uncommnet
-        self.force_1 = msg.data - 5.5 # todo: delete testing (offset subtraction)
+        self.force_1 = msg.data
 
     def listener_callback_2(self, msg):
         #self.get_logger().info('I heard: "%s"' % msg.data)
-        #self.force_2 = msg.data # todo: delete uncommnet
-        self.force_2 = -(msg.data - 5.5) # todo: delete testing (offset subtraction)
+        self.force_2 = msg.data
 
     def timer_callback(self):
         # todo: use this for testing on wheelchair
@@ -68,10 +74,20 @@ class CommandVelocityFromForcesPublisher(Node):
         #if abs(self.force_2) > self.force_threshold:
         self.cmd.angular.z = self.cmd.angular.z + self.force_2 * self.timer_period * self.factor_2
 
-        self.cmd.linear.x = (self.force_1 - 745) * 0.01
-        self.cmd.angular.z = (self.force_2 - 745) * 0.01
+        self.cmd.linear.x = (self.force_1 - self.mean_1) * 0.01
+        self.cmd.angular.z = (self.force_2 - self.mean_2) * 0.01
+
+        self.number_of_initial_samples
 
         self.publisher_.publish(self.cmd)
+
+        # todo: change offset handling
+        if (self.initial_samples_counter <= self.number_of_initial_samples):
+            self.zero_value_list_1.append(self.force_1)
+            self.zero_value_list_2.append(self.force_2)
+            self.mean_1 = sum(self.zero_value_list_1)/len(self.zero_value_list_1)
+            self.mean_2 = sum(self.zero_value_list_2)/len(self.zero_value_list_2)
+            self.initial_samples_counter = self.initial_samples_counter+1
 
         #self.get_logger().info(f'cmd.linear.x start: {self.cmd.linear.x}')
 

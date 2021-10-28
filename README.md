@@ -39,4 +39,6 @@ colcon build --packages-select force_joystick
 ros2 launch force_joystick two_analog_in_eloquent.launch.py
 ```
 
+### do nothing for 30 sec
+
 
