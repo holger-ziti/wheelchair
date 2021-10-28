@@ -54,6 +54,7 @@ ros2 launch turtlebot3_gazebo empty_world.launch.py
 ```console
 git clone https://github.com/5i0770/mobile_robot_gym.git
 ln -s ~/git/mobile_robot_gym/ros2_workspace/src/wheelchair_gazebo ~/dev_ws/src
+ros2 launch wheelchair_gazebo worl
 ```
 
 

@@ -77,7 +77,11 @@ class CommandVelocityFromForcesPublisher(Node):
         self.cmd.linear.x = (self.force_1 - self.mean_1) * 0.01
         self.cmd.angular.z = (self.force_2 - self.mean_2) * 0.01
 
-        self.number_of_initial_samples
+        # do not publish noise values
+        if self.cmd.linear.x < 0.1:
+            self.cmd.linear.x = 0.0
+        if self.cmd.angular.z < 0.1:
+            self.cmd.angular.z = 0.0
 
         self.publisher_.publish(self.cmd)
 
