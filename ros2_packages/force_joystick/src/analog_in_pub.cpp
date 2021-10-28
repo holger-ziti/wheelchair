@@ -81,14 +81,23 @@ private:
   {
 
   
-    // use random number
-    int iRand;  
-    iRand = readAnalog(0); 
-    iRand = rand() % 10 + 1; /* generate random number between 1 and 10: */
-
-    
     auto message = std_msgs::msg::Int32();
-    message.data = iRand;
+    
+    // get param 
+    rclcpp::Parameter int_param = this->get_parameter("analog_input_number");
+    int my_int = int_param.as_int();
+    //int my_int = this->my_int;
+    
+    int iVolt;
+    iVolt = readAnalog(my_int); 
+    message.data = iVolt;
+    
+    /* use randomly number generate int between 1 and 10: */
+    //int iRand; 
+    //iRand = rand() % 10 + 1; 
+    //message.data = iRand;
+    
+    
     //RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.value_to_string().c_str());
     publisher_->publish(message);
   }

@@ -9,7 +9,7 @@ def generate_launch_description():
             executable='voltage',
             name='test1',
             parameters=[
-                {'analog_input_number': 14}
+                {'analog_input_number': 0}
             ],
             output='screen',
             emulate_tty=True
@@ -19,7 +19,7 @@ def generate_launch_description():
             executable='voltage',
             name='test2',
             parameters=[
-                {'analog_input_number': 13}
+                {'analog_input_number': 1}
             ],
             output='screen',
             emulate_tty=True
@@ -29,8 +29,8 @@ def generate_launch_description():
             executable='force_cmd.py',
             name='test3',
             parameters=[
-                {'raw_voltage_number_1': 14},
-                {'raw_voltage_number_2': 13}
+                {'raw_voltage_number_1': 0},
+                {'raw_voltage_number_2': 1}
             ],
             output='screen',
             emulate_tty=True
