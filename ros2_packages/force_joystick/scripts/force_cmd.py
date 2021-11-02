@@ -69,19 +69,22 @@ class CommandVelocityFromForcesPublisher(Node):
         # self.cmd.angular.z = self.force_2 * self.timer_period * self.factor_2
 
         # todo: integration is drifting, use threshold?
+        self.force_1 = self.force_1 - self.mean_1
         #if abs(self.force_1) > self.force_threshold:
         self.cmd.linear.x = self.cmd.linear.x + self.force_1 * self.timer_period * self.factor_1
+
+        self.force_2 = self.force_2 - self.mean_2
         #if abs(self.force_2) > self.force_threshold:
         self.cmd.angular.z = self.cmd.angular.z + self.force_2 * self.timer_period * self.factor_2
 
-        self.cmd.linear.x = (self.force_1 - self.mean_1) * 0.01
-        self.cmd.angular.z = (self.force_2 - self.mean_2) * 0.01
+        #self.cmd.linear.x = (self.force_1 - self.mean_1) * 0.01
+        #self.cmd.angular.z = (self.force_2 - self.mean_2) * 0.01
 
         # do not publish noise values
-        if abs(self.cmd.linear.x) < 0.1:
-            self.cmd.linear.x = 0.0
-        if abs(self.cmd.angular.z) < 0.1:
-            self.cmd.angular.z = 0.0
+        #if abs(self.cmd.linear.x) < 0.1:
+        #    self.cmd.linear.x = 0.0
+        #if abs(self.cmd.angular.z) < 0.1:
+        #    self.cmd.angular.z = 0.0
 
         self.publisher_.publish(self.cmd)
 
