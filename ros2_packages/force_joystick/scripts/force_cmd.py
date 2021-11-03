@@ -48,6 +48,9 @@ class CommandVelocityFromForcesPublisher(Node):
         self.force_1 = 0.0
         self.force_2 = 0.0
 
+        self.voltage_int1 = 0
+        self.voltage_int2 = 0
+
         self.factor_1 = 0.1 # "force to velocity"
         self.factor_2 = 0.05 # "force to velocity"
 
@@ -63,13 +66,11 @@ class CommandVelocityFromForcesPublisher(Node):
 
     def listener_callback_1(self, msg):
         #self.get_logger().info('I heard: "%s"' % msg.data)
-        a = 0.75 # low-pass filter
-        self.force_1 = a * self.force_1 + (1-a) * msg.data
+        self.voltage_int1 = msg.data
 
     def listener_callback_2(self, msg):
         #self.get_logger().info('I heard: "%s"' % msg.data)
-        a = 0.75 # low-pass filter
-        self.force_2 = a * self.force_2 + (1-a) * msg.data
+        self.voltage_int2 = msg.data
 
     def cmd_vel_callback(self, msg):
         self.cmd.linear.x = msg.linear.x
@@ -81,11 +82,17 @@ class CommandVelocityFromForcesPublisher(Node):
         # self.cmd.angular.z = self.force_2 * self.timer_period * self.factor_2
 
         # todo: integration is drifting, use threshold?
-        self.force_1 = self.force_1 - self.mean_1
+
+        a = 0.75 # low-pass filter for force value
+        self.force_1 = a * self.force_1 + (1-a) * (self.voltage_int1 - self.mean_1)
+
+        b = 0.5
+
+
         #if abs(self.force_1) > self.force_threshold:
         self.cmd.linear.x = self.cmd.linear.x + self.force_1 * self.timer_period * self.factor_1
 
-        self.force_2 = self.force_2 - self.mean_2
+        self.force_2 = a * self.force_2 + (1-a) * (self.voltage_int2 - self.mean_2)
         #if abs(self.force_2) > self.force_threshold:
         self.cmd.angular.z = self.cmd.angular.z + self.force_2 * self.timer_period * self.factor_2
 
@@ -102,12 +109,14 @@ class CommandVelocityFromForcesPublisher(Node):
 
         # todo: change offset handling
         if (self.initial_samples_counter <= self.number_of_initial_samples):
-            self.zero_value_list_1.append(self.force_1)
-            self.zero_value_list_2.append(self.force_2)
+            self.zero_value_list_1.append(self.voltage_int1)
+            self.zero_value_list_2.append(self.voltage_int2)
             self.mean_1 = sum(self.zero_value_list_1)/len(self.zero_value_list_1)
             self.mean_2 = sum(self.zero_value_list_2)/len(self.zero_value_list_2)
             self.initial_samples_counter = self.initial_samples_counter+1
-
+            self.get_logger().info(f'mean_1: {self.mean_1}')
+        if (self.initial_samples_counter == self.number_of_initial_samples):
+            self.get_logger().info(f'mean_2: {self.mean_2}')
         #self.get_logger().info(f'cmd.linear.x start: {self.cmd.linear.x}')
 
 
