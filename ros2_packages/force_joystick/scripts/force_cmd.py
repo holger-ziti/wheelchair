@@ -45,8 +45,8 @@ class CommandVelocityFromForcesPublisher(Node):
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
 
         self.cmd = Twist()
-        self.force_1 = 0
-        self.force_2 = 0
+        self.force_1 = 0.0
+        self.force_2 = 0.0
 
         self.factor_1 = 0.1 # "force to velocity"
         self.factor_2 = 0.05 # "force to velocity"
@@ -63,11 +63,13 @@ class CommandVelocityFromForcesPublisher(Node):
 
     def listener_callback_1(self, msg):
         #self.get_logger().info('I heard: "%s"' % msg.data)
-        self.force_1 = msg.data
+        a = 0.75 # low-pass filter
+        self.force_1 = a * self.force_1 + (1-a) * msg.data
 
     def listener_callback_2(self, msg):
         #self.get_logger().info('I heard: "%s"' % msg.data)
-        self.force_2 = msg.data
+        a = 0.75 # low-pass filter
+        self.force_2 = a * self.force_2 + (1-a) * msg.data
 
     def cmd_vel_callback(self, msg):
         self.cmd.linear.x = msg.linear.x
