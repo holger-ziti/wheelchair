@@ -6,7 +6,8 @@ from rclpy.node import Node
 from std_msgs.msg import Int32, Float32
 from geometry_msgs.msg import Twist
 
-
+def sign_float(a):
+    return (a > 0) - (a < 0)
 
 class CommandVelocityFromForcesPublisher(Node):
 
@@ -84,13 +85,13 @@ class CommandVelocityFromForcesPublisher(Node):
         b2 = 50.0
 
         self.force_1 = a * self.force_1 + (1-a) * (self.voltage_int1 - self.mean_1)
-        damping_force_1 = - self.cmd.linear.x * b1
+        damping_force_1 = -sign_float(self.cmd.linear.x) * b1 # - self.cmd.linear.x * b1
         #if abs(self.force_1) > self.force_threshold:
         self.cmd.linear.x = self.cmd.linear.x + self.timer_period * self.factor_1 * (self.force_1 + damping_force_1)
 
 
         self.force_2 = a * self.force_2 + (1-a) * (self.voltage_int2 - self.mean_2)
-        damping_force_2 = - self.cmd.angular.z * b2
+        damping_force_2 = -sign_float(self.cmd.angular.z) * b2  #- self.cmd.angular.z * b2
         #if abs(self.force_2) > self.force_threshold:
         self.cmd.angular.z = self.cmd.angular.z + self.timer_period * self.factor_2 * (self.force_2 + damping_force_2)
 
