@@ -58,7 +58,7 @@ class CommandVelocityFromForcesPublisher(Node):
         self.force_threshold = 0.1
 
         # todo: change offset handling
-        self.number_of_initial_samples = 100
+        self.number_of_initial_samples = 1000
         self.initial_samples_counter = 0
         self.zero_value_list_1 = []
         self.zero_value_list_2 = []
@@ -85,12 +85,18 @@ class CommandVelocityFromForcesPublisher(Node):
         b2 = 5.00
 
         self.force_1 = self.voltage_int1 - self.mean_1 # a * self.force_1 + (1-a) * (self.voltage_int1 - self.mean_1)
+        if self.force_1 < 15.0:
+            self.force_1 = 0.0
+
         damping_force_1 = -sign_float(self.cmd.linear.x) * b1 # - self.cmd.linear.x * b1
         #if abs(self.force_1) > self.force_threshold:
         self.cmd.linear.x = self.cmd.linear.x + self.timer_period * self.factor_1 * (self.force_1 + damping_force_1)
 
 
         self.force_2 = self.voltage_int2 - self.mean_2 # a * self.force_2 + (1-a) * (self.voltage_int2 - self.mean_2)
+        if self.force_2 < 15.0:
+            self.force_2 = 0.0
+
         damping_force_2 = -sign_float(self.cmd.angular.z) * b2  #- self.cmd.angular.z * b2
         #if abs(self.force_2) > self.force_threshold:
         self.cmd.angular.z = self.cmd.angular.z + self.timer_period * self.factor_2 * (self.force_2 + damping_force_2)
