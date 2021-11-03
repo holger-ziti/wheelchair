@@ -87,8 +87,7 @@ class CommandVelocityFromForcesPublisher(Node):
         damping_force_1 = - self.cmd.linear.x * b1
         #if abs(self.force_1) > self.force_threshold:
         self.cmd.linear.x = self.cmd.linear.x + self.timer_period * self.factor_1 * (self.force_1 + damping_force_1)
-        self.publisher_f1_.publish(self.force_1)
-        self.publisher_d1_.publish(damping_force_1)
+
 
         self.force_2 = a * self.force_2 + (1-a) * (self.voltage_int2 - self.mean_2)
         damping_force_2 = - self.cmd.angular.z * b2
@@ -105,6 +104,15 @@ class CommandVelocityFromForcesPublisher(Node):
         #    self.cmd.angular.z = 0.0
 
         self.publisher_.publish(self.cmd)
+
+        # todo: delte (debugging)
+        joystick_force1 = Float32()
+        joystick_force1.data = self.force_1
+        self.publisher_f1_.publish(joystick_force1)
+
+        damping_force1 = Float32()
+        damping_force1.data = damping_force_1
+        self.publisher_d1_.publish(damping_force1)
 
         # todo: change offset handling
         if (self.initial_samples_counter <= self.number_of_initial_samples):
