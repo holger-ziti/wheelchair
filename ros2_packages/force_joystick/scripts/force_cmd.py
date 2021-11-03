@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import Int32
+from std_msgs.msg import Int32, Float32
 from geometry_msgs.msg import Twist
 
 
@@ -35,6 +35,10 @@ class CommandVelocityFromForcesPublisher(Node):
 
 
         self.publisher_ = self.create_publisher(Twist, 'cmd_vel', 10)
+
+        # todo: delete (just for debugging)
+        self.publisher_f1_ = self.create_publisher(Float32, 'force1', 10)
+        self.publisher_d1_ = self.create_publisher(Float32, 'damping_force1', 10)
 
         # publish cmd_vel with a fixed frequency
         self.timer_period = 0.01  # seconds
@@ -83,6 +87,8 @@ class CommandVelocityFromForcesPublisher(Node):
         damping_force_1 = - self.cmd.linear.x * b1
         #if abs(self.force_1) > self.force_threshold:
         self.cmd.linear.x = self.cmd.linear.x + self.timer_period * self.factor_1 * (self.force_1 + damping_force_1)
+        self.publisher_f1_.publish(self.force_1)
+        self.publisher_d1_.publish(damping_force_1)
 
         self.force_2 = a * self.force_2 + (1-a) * (self.voltage_int2 - self.mean_2)
         damping_force_2 = - self.cmd.angular.z * b2
