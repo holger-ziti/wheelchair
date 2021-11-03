@@ -76,8 +76,8 @@ class CommandVelocityFromForcesPublisher(Node):
         # todo: integration is drifting, use threshold?
 
         a = 0.75 # low-pass filter for force/voltage value
-        b1 = 0.5 # damping parameter
-        b2 = 0.5
+        b1 = 0.8 # damping parameter
+        b2 = 0.8
 
         self.force_1 = a * self.force_1 + (1-a) * (self.voltage_int1 - self.mean_1)
         damping_force_1 = - self.cmd.linear.x * b1
