@@ -32,6 +32,12 @@ class CommandVelocityFromForcesPublisher(Node):
             self.listener_callback_2,
             10)
 
+        self.subscription = self.create_subscription(
+            Twist,
+            'cmd_vel',
+            self.cmd_vel_callback,
+            10)
+
         self.publisher_ = self.create_publisher(Twist, 'cmd_vel', 10)
 
         # publish cmd_vel with a fixed frequency
@@ -62,6 +68,10 @@ class CommandVelocityFromForcesPublisher(Node):
     def listener_callback_2(self, msg):
         #self.get_logger().info('I heard: "%s"' % msg.data)
         self.force_2 = msg.data
+
+    def cmd_vel_callback(self, msg):
+        self.cmd.linear.x = msg.linear.x
+        self.cmd.angular.z = msg.angular.z
 
     def timer_callback(self):
         # todo: use this for testing on wheelchair
