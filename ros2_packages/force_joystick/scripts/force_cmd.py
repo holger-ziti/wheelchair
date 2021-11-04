@@ -19,21 +19,28 @@ class CommandVelocityFromForcesPublisher(Node):
         self.declare_parameter('raw_voltage_number_2', '2')
         self.declare_parameter('voltage_offset_1', '0')
         self.declare_parameter('voltage_offset_2', '0')
+        self.declare_parameter('damping_param_1', '0')
+        self.declare_parameter('damping_param_2', '0')
 
-        param_1 = self.get_parameter('raw_voltage_number_1').get_parameter_value().integer_value
-        param_2 = self.get_parameter('raw_voltage_number_2').get_parameter_value().integer_value
+        # https://github.com/ros2/ros2cli/blob/master/ros2param/ros2param/api/__init__.py
+        raw_voltage_number_1 = self.get_parameter('raw_voltage_number_1').get_parameter_value().integer_value
+        raw_voltage_number_2 = self.get_parameter('raw_voltage_number_2').get_parameter_value().integer_value
+
         self.voltage_offset_1 = self.get_parameter('voltage_offset_1').get_parameter_value().integer_value
         self.voltage_offset_2 = self.get_parameter('voltage_offset_2').get_parameter_value().integer_value
 
+        self.damping_param_1 = self.get_parameter('voltage_offset_1').get_parameter_value().double_value
+        self.damping_param_2 = self.get_parameter('voltage_offset_2').get_parameter_value().double_value
+
         self.subscription = self.create_subscription(
             Int32,
-            f'raw_voltage_{param_1}',
+            f'raw_voltage_{raw_voltage_number_1}',
             self.listener_callback_1,
             10)
 
         self.subscription = self.create_subscription(
             Int32,
-            f'raw_voltage_{param_2}',
+            f'raw_voltage_{raw_voltage_number_2}',
             self.listener_callback_2,
             10)
 
@@ -61,8 +68,9 @@ class CommandVelocityFromForcesPublisher(Node):
         self.voltage_int1 = 0
         self.voltage_int2 = 0
 
+        # todo: ros param
         self.voltage_to_force_factor_1 = 0.1 # "force to velocity"
-        self.voltage_to_force_factor_2 = 0.05 # "force to velocity"
+        self.voltage_to_force_factor_2 = 0.5 # "force to velocity"
 
         self.voltage_threshold = 25.0
 
@@ -95,10 +103,8 @@ class CommandVelocityFromForcesPublisher(Node):
             self.joystick_force_2 = self.voltage_to_force_factor_2 * delta_voltage_2
 
         # compute damping force
-        b1 = 0.00 # todo: damping ros parameter
-        b2 = 5.00
         damping_force_1 = 0.0 # todo: v near zero -> stop
-        damping_force_2 = -sign_float(self.cmd.angular.z) * abs(self.cmd.angular.z) * b2 # todo: use quadratic function?
+        damping_force_2 = -sign_float(self.cmd.angular.z) * abs(self.cmd.angular.z) * self.damping_param_2 # todo: use quadratic function?
 
         # add forces
         force_sum_1 = self.joystick_force_1 + damping_force_1

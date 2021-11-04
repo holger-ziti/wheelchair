@@ -32,7 +32,9 @@ def generate_launch_description():
                 {'raw_voltage_number_1': 0},
                 {'raw_voltage_number_2': 1},
                 {'voltage_offset_1': 742},
-                {'voltage_offset_2': 742}
+                {'voltage_offset_2': 742},
+                {'damping_param_1': 0.0},
+                {'damping_param_2': 10.0}
             ],
             output='screen',
             emulate_tty=True
