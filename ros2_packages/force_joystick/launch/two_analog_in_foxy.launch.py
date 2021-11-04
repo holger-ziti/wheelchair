@@ -30,7 +30,9 @@ def generate_launch_description():
             name='test3',
             parameters=[
                 {'raw_voltage_number_1': 0},
-                {'raw_voltage_number_2': 1}
+                {'raw_voltage_number_2': 1},
+                {'voltage_offset_1': 742},
+                {'voltage_offset_2': 742}
             ],
             output='screen',
             emulate_tty=True

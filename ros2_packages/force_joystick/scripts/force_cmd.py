@@ -17,9 +17,13 @@ class CommandVelocityFromForcesPublisher(Node):
         # default parameter values
         self.declare_parameter('raw_voltage_number_1', '1')
         self.declare_parameter('raw_voltage_number_2', '2')
+        self.declare_parameter('voltage_offset_1', '0')
+        self.declare_parameter('voltage_offset_2', '0')
 
         param_1 = self.get_parameter('raw_voltage_number_1').get_parameter_value().integer_value
         param_2 = self.get_parameter('raw_voltage_number_2').get_parameter_value().integer_value
+        self.voltage_offset_1 = self.get_parameter('voltage_offset_1').get_parameter_value().integer_value
+        self.voltage_offset_2 = self.get_parameter('voltage_offset_2').get_parameter_value().integer_value
 
         self.subscription = self.create_subscription(
             Int32,
@@ -60,10 +64,10 @@ class CommandVelocityFromForcesPublisher(Node):
         # todo: change offset handling
         self.number_of_initial_samples = 100
         self.initial_samples_counter = 0
-        self.zero_value_list_1 = []
-        self.zero_value_list_2 = []
-        self.mean_1 = 743.0 # todo: use ros param
-        self.mean_2 = 743.0 # todo: use ros param
+        #self.zero_value_list_1 = []
+        #self.zero_value_list_2 = []
+        #self.mean_1 = 742.0 # todo: use ros param
+        #self.mean_2 = 742.0 # todo: use ros param
 
     def listener_callback_1(self, msg):
         #self.get_logger().info('I heard: "%s"' % msg.data)
@@ -82,8 +86,8 @@ class CommandVelocityFromForcesPublisher(Node):
         b1 = 0.50 # damping parameter
         b2 = 0.50
 
-        self.force_1 = self.voltage_int1 - self.mean_1 # a * self.force_1 + (1-a) * (self.voltage_int1 - self.mean_1)
-        self.force_2 = self.voltage_int2 - self.mean_2 # a * self.force_2 + (1-a) * (self.voltage_int2 - self.mean_2)
+        self.force_1 = self.voltage_int1 - self.voltage_offset_1#self.mean_1 # a * self.force_1 + (1-a) * (self.voltage_int1 - self.mean_1)
+        self.force_2 = self.voltage_int2 - self.voltage_offset_1#self.mean_2 # a * self.force_2 + (1-a) * (self.voltage_int2 - self.mean_2)
 
         if abs(self.force_1) < self.force_threshold:
             self.force_1 = 0.0
@@ -109,27 +113,28 @@ class CommandVelocityFromForcesPublisher(Node):
 
         # todo: delte (debugging)
         joystick_force1 = Float32()
-        joystick_force1.data = self.force_1
+        joystick_force1.data = float(self.force_1)
         self.publisher_f1_.publish(joystick_force1)
 
         damping_force1 = Float32()
-        damping_force1.data = damping_force_1
+        damping_force1.data = float(damping_force_1)
         self.publisher_d1_.publish(damping_force1)
 
         # todo: change offset handling
         if self.initial_samples_counter <= self.number_of_initial_samples:
-            self.zero_value_list_1.append(self.voltage_int1)
-            self.zero_value_list_2.append(self.voltage_int2)
+            #self.zero_value_list_1.append(self.voltage_int1)
+            #self.zero_value_list_2.append(self.voltage_int2)
             #self.mean_1 = sum(self.zero_value_list_1)/len(self.zero_value_list_1)
             #self.mean_2 = sum(self.zero_value_list_2)/len(self.zero_value_list_2)
             self.initial_samples_counter = self.initial_samples_counter+1
 
-        if self.initial_samples_counter == self.number_of_initial_samples:
+            if self.initial_samples_counter == self.number_of_initial_samples:
             #self.get_logger().info(f'mean_1: {self.mean_1}')
             #self.get_logger().info(f'mean_2: {self.mean_2}')
 
-            self.get_logger().info(f'voltage1 - mean1: {self.voltage_int1 - self.mean_1}')
-            self.get_logger().info(f'voltage2 - mean2: {self.voltage_int2 - self.mean_2}')
+                self.get_logger().info(f'voltage1 - mean1: {self.voltage_int1 - self.voltage_offset_1}')
+                self.get_logger().info(f'voltage2 - mean2: {self.voltage_int2 - self.voltage_offset_2}')
+
 
 
         # self.get_logger().info(f'cmd.linear.x start: {self.cmd.linear.x}')
