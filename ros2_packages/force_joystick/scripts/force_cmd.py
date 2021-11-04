@@ -55,7 +55,7 @@ class CommandVelocityFromForcesPublisher(Node):
         self.factor_1 = 0.1 # "force to velocity"
         self.factor_2 = 0.05 # "force to velocity"
 
-        self.force_threshold = 0.1
+        self.force_threshold = 15.0
 
         # todo: change offset handling
         self.number_of_initial_samples = 1000
@@ -78,36 +78,31 @@ class CommandVelocityFromForcesPublisher(Node):
         # self.cmd.linear.x = self.force_1 * self.timer_period * self.factor_1
         # self.cmd.angular.z = self.force_2 * self.timer_period * self.factor_2
 
-        # todo: integration is drifting, use threshold?
-
         a = 0.75 # low-pass filter for force/voltage value
-        b1 = 5.00 # damping parameter
-        b2 = 5.00
+        b1 = 0.50 # damping parameter
+        b2 = 0.50
 
         self.force_1 = self.voltage_int1 - self.mean_1 # a * self.force_1 + (1-a) * (self.voltage_int1 - self.mean_1)
-        if self.force_1 < 15.0:
-            self.force_1 = 0.0
-
-        damping_force_1 = -sign_float(self.cmd.linear.x) * b1 # - self.cmd.linear.x * b1
-        #if abs(self.force_1) > self.force_threshold:
-        self.cmd.linear.x = self.cmd.linear.x + self.timer_period * self.factor_1 * (self.force_1 + damping_force_1)
-
-
         self.force_2 = self.voltage_int2 - self.mean_2 # a * self.force_2 + (1-a) * (self.voltage_int2 - self.mean_2)
-        if self.force_2 < 15.0:
-            self.force_2 = 0.0
 
+        if abs(self.force_1) < self.force_threshold:
+            self.force_1 = 0.0
+        if abs(self.force_2) < self.force_threshold:
+            self.force_2 = 0.0
+        
+        damping_force_1 = -sign_float(self.cmd.linear.x) * b1 # - self.cmd.linear.x * b1
         damping_force_2 = -sign_float(self.cmd.angular.z) * b2  #- self.cmd.angular.z * b2
-        #if abs(self.force_2) > self.force_threshold:
+
+        self.cmd.linear.x = self.cmd.linear.x + self.timer_period * self.factor_1 * (self.force_1 + damping_force_1)
         self.cmd.angular.z = self.cmd.angular.z + self.timer_period * self.factor_2 * (self.force_2 + damping_force_2)
 
-        #self.cmd.linear.x = (self.force_1 - self.mean_1) * 0.01
-        #self.cmd.angular.z = (self.force_2 - self.mean_2) * 0.01
+        # self.cmd.linear.x = (self.force_1 - self.mean_1) * 0.01
+        # self.cmd.angular.z = (self.force_2 - self.mean_2) * 0.01
 
         # do not publish noise values
-        #if abs(self.cmd.linear.x) < 0.1:
+        # if abs(self.cmd.linear.x) < 0.1:
         #    self.cmd.linear.x = 0.0
-        #if abs(self.cmd.angular.z) < 0.1:
+        # if abs(self.cmd.angular.z) < 0.1:
         #    self.cmd.angular.z = 0.0
 
         self.publisher_.publish(self.cmd)
@@ -122,16 +117,18 @@ class CommandVelocityFromForcesPublisher(Node):
         self.publisher_d1_.publish(damping_force1)
 
         # todo: change offset handling
-        if (self.initial_samples_counter <= self.number_of_initial_samples):
+        if self.initial_samples_counter <= self.number_of_initial_samples:
             self.zero_value_list_1.append(self.voltage_int1)
             self.zero_value_list_2.append(self.voltage_int2)
             self.mean_1 = sum(self.zero_value_list_1)/len(self.zero_value_list_1)
             self.mean_2 = sum(self.zero_value_list_2)/len(self.zero_value_list_2)
             self.initial_samples_counter = self.initial_samples_counter+1
-        if (self.initial_samples_counter == self.number_of_initial_samples):
+
+        if self.initial_samples_counter == self.number_of_initial_samples:
             self.get_logger().info(f'mean_1: {self.mean_1}')
             self.get_logger().info(f'mean_2: {self.mean_2}')
-        #self.get_logger().info(f'cmd.linear.x start: {self.cmd.linear.x}')
+
+        # self.get_logger().info(f'cmd.linear.x start: {self.cmd.linear.x}')
 
 
 def main(args=None):
