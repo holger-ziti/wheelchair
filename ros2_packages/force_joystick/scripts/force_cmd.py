@@ -97,8 +97,9 @@ class CommandVelocityFromForcesPublisher(Node):
         damping_force_1 = -sign_float(self.cmd.linear.x) * b1 # - self.cmd.linear.x * b1
         damping_force_2 = -sign_float(self.cmd.angular.z) * b2  #- self.cmd.angular.z * b2
 
-        force_sum_1 = self.joystick_force_1 + damping_force_1
-        force_sum_2 = self.joystick_force_2 + damping_force_2
+        # todo: how to handle damping?
+        force_sum_1 = self.joystick_force_1 #+ damping_force_1
+        force_sum_2 = self.joystick_force_2 #+ damping_force_2
 
         v_old = self.cmd.linear.x
         omega_old = self.cmd.angular.z
@@ -107,12 +108,12 @@ class CommandVelocityFromForcesPublisher(Node):
         delta_omega = self.timer_period * self.factor_2 * force_sum_2
 
         # threshold
-        if delta_v > 0.1:
+        if delta_v > 0.01:
             self.cmd.linear.x = v_old + delta_v
         else:
             self.cmd.linear.x = v_old
 
-        if delta_omega > 0.1:
+        if delta_omega > 0.01:
             self.cmd.angular.z = omega_old + delta_omega
         else:
             self.cmd.angular.z = omega_old
