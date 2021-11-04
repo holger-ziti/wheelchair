@@ -58,12 +58,12 @@ class CommandVelocityFromForcesPublisher(Node):
         self.force_threshold = 15.0
 
         # todo: change offset handling
-        self.number_of_initial_samples = 1000
+        self.number_of_initial_samples = 100
         self.initial_samples_counter = 0
         self.zero_value_list_1 = []
         self.zero_value_list_2 = []
-        self.mean_1 = 0.0
-        self.mean_2 = 0.0
+        self.mean_1 = 743.0 # todo: use ros param
+        self.mean_2 = 743.0 # todo: use ros param
 
     def listener_callback_1(self, msg):
         #self.get_logger().info('I heard: "%s"' % msg.data)
@@ -89,7 +89,7 @@ class CommandVelocityFromForcesPublisher(Node):
             self.force_1 = 0.0
         if abs(self.force_2) < self.force_threshold:
             self.force_2 = 0.0
-        
+
         damping_force_1 = -sign_float(self.cmd.linear.x) * b1 # - self.cmd.linear.x * b1
         damping_force_2 = -sign_float(self.cmd.angular.z) * b2  #- self.cmd.angular.z * b2
 
@@ -120,13 +120,17 @@ class CommandVelocityFromForcesPublisher(Node):
         if self.initial_samples_counter <= self.number_of_initial_samples:
             self.zero_value_list_1.append(self.voltage_int1)
             self.zero_value_list_2.append(self.voltage_int2)
-            self.mean_1 = sum(self.zero_value_list_1)/len(self.zero_value_list_1)
-            self.mean_2 = sum(self.zero_value_list_2)/len(self.zero_value_list_2)
+            #self.mean_1 = sum(self.zero_value_list_1)/len(self.zero_value_list_1)
+            #self.mean_2 = sum(self.zero_value_list_2)/len(self.zero_value_list_2)
             self.initial_samples_counter = self.initial_samples_counter+1
 
         if self.initial_samples_counter == self.number_of_initial_samples:
-            self.get_logger().info(f'mean_1: {self.mean_1}')
-            self.get_logger().info(f'mean_2: {self.mean_2}')
+            #self.get_logger().info(f'mean_1: {self.mean_1}')
+            #self.get_logger().info(f'mean_2: {self.mean_2}')
+
+            self.get_logger().info(f'voltage1 - mean1: {self.voltage_int1 - self.mean_1}')
+            self.get_logger().info(f'voltage2 - mean2: {self.voltage_int2 - self.mean_2}')
+
 
         # self.get_logger().info(f'cmd.linear.x start: {self.cmd.linear.x}')
 
