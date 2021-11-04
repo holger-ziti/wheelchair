@@ -56,8 +56,8 @@ class CommandVelocityFromForcesPublisher(Node):
         self.voltage_int1 = 0
         self.voltage_int2 = 0
 
-        self.factor_1 = 0.1 # "force to velocity"
-        self.factor_2 = 0.05 # "force to velocity"
+        self.voltage_to_force_factor_1 = 0.1 # "force to velocity"
+        self.voltage_to_force_factor_2 = 0.05 # "force to velocity"
 
         self.voltage_threshold = 25.0
 
@@ -83,17 +83,17 @@ class CommandVelocityFromForcesPublisher(Node):
         if abs(delta_voltage_1) < self.voltage_threshold:
             self.joystick_force_1 = 0.0
         else:
-            self.joystick_force_1 = self.factor_1 * delta_voltage_1
+            self.joystick_force_1 = self.voltage_to_force_factor_1 * delta_voltage_1
         if abs(delta_voltage_2) < self.voltage_threshold:
             self.joystick_force_2 = 0.0
         else:
-            self.joystick_force_2 = self.factor_2 * delta_voltage_2
+            self.joystick_force_2 = self.voltage_to_force_factor_2 * delta_voltage_2
 
         # compute damping force
         b1 = 0.00 # todo: damping ros parameter
         b2 = 5.00
-        damping_force_1 = -sign_float(self.cmd.linear.x) * b1 # - self.cmd.linear.x * b1
-        damping_force_2 = -sign_float(self.cmd.angular.z) * b2  #- self.cmd.angular.z * b2
+        damping_force_1 = -sign_float(self.cmd.linear.x) * b1
+        damping_force_2 = -sign_float(self.cmd.angular.z) * b2
 
         # add forces
         force_sum_1 = self.joystick_force_1 + damping_force_1
@@ -106,7 +106,7 @@ class CommandVelocityFromForcesPublisher(Node):
         delta_omega = force_sum_2 * self.timer_period
 
         # threshold for changes in cmd_vel
-        if delta_v > 0.01:
+        if delta_v > 0.005:
             self.cmd.linear.x = v_old + delta_v
         else:
             self.cmd.linear.x = v_old
@@ -130,12 +130,10 @@ class CommandVelocityFromForcesPublisher(Node):
         if self.initial_samples_counter <= self.number_of_initial_samples:
             self.initial_samples_counter = self.initial_samples_counter+1
 
-            if self.initial_samples_counter == 10:
-                self.get_logger().info(f'running')
-
             if self.initial_samples_counter == self.number_of_initial_samples:
                 self.get_logger().info(f'voltage1 - mean1: {self.voltage_int1 - self.voltage_offset_1}')
                 self.get_logger().info(f'voltage2 - mean2: {self.voltage_int2 - self.voltage_offset_2}')
+                self.get_logger().info(f'running')
 
 
 def main(args=None):
