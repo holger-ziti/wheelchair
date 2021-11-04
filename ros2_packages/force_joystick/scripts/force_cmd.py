@@ -43,7 +43,9 @@ class CommandVelocityFromForcesPublisher(Node):
 
         # todo: delete (just for debugging)
         self.publisher_f1_ = self.create_publisher(Float32, 'force1', 10)
+        self.publisher_f2_ = self.create_publisher(Float32, 'force2', 10)
         self.publisher_d1_ = self.create_publisher(Float32, 'damping_force1', 10)
+        self.publisher_d2_ = self.create_publisher(Float32, 'damping_force2', 10)
 
         # publish cmd_vel with a fixed frequency
         self.timer_period = 0.01  # seconds
@@ -121,15 +123,20 @@ class CommandVelocityFromForcesPublisher(Node):
         joystick_force1 = Float32()
         joystick_force1.data = float(self.joystick_force_1)
         self.publisher_f1_.publish(joystick_force1)
+        joystick_force2 = Float32()
+        joystick_force2.data = float(self.joystick_force_2)
+        self.publisher_f2_.publish(joystick_force2)
 
         damping_force1 = Float32()
         damping_force1.data = float(damping_force_1)
         self.publisher_d1_.publish(damping_force1)
+        damping_force2 = Float32()
+        damping_force2.data = float(damping_force_2)
+        self.publisher_d2_.publish(damping_force2)
 
-        # todo: change offset handling
+        # info: running properly?
         if self.initial_samples_counter <= self.number_of_initial_samples:
             self.initial_samples_counter = self.initial_samples_counter+1
-
             if self.initial_samples_counter == self.number_of_initial_samples:
                 self.get_logger().info(f'voltage1 - mean1: {self.voltage_int1 - self.voltage_offset_1}')
                 self.get_logger().info(f'voltage2 - mean2: {self.voltage_int2 - self.voltage_offset_2}')
