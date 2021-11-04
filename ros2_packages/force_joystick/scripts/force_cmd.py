@@ -59,15 +59,11 @@ class CommandVelocityFromForcesPublisher(Node):
         self.factor_1 = 0.1 # "force to velocity"
         self.factor_2 = 0.05 # "force to velocity"
 
-        self.force_threshold = 15.0
+        self.voltage_threshold = 25.0
 
         # todo: change offset handling
         self.number_of_initial_samples = 100
         self.initial_samples_counter = 0
-        #self.zero_value_list_1 = []
-        #self.zero_value_list_2 = []
-        #self.mean_1 = 742.0 # todo: use ros param
-        #self.mean_2 = 742.0 # todo: use ros param
 
     def listener_callback_1(self, msg):
         #self.get_logger().info('I heard: "%s"' % msg.data)
@@ -78,50 +74,50 @@ class CommandVelocityFromForcesPublisher(Node):
         self.voltage_int2 = msg.data
 
     def timer_callback(self):
-        # todo: use this for testing on wheelchair
-        # self.cmd.linear.x = self.force_1 * self.timer_period * self.factor_1
-        # self.cmd.angular.z = self.force_2 * self.timer_period * self.factor_2
 
-        a = 0.75 # low-pass filter for force/voltage value
-        b1 = 0.50 # damping parameter
-        b2 = 0.50
+        # delete voltage offset
+        delta_voltage_1 = self.voltage_int1 - self.voltage_offset_1
+        delta_voltage_2 = self.voltage_int2 - self.voltage_offset_2
 
-        self.joystick_force_1 = self.voltage_int1 - self.voltage_offset_1#self.mean_1 # a * self.force_1 + (1-a) * (self.voltage_int1 - self.mean_1)
-        self.joystick_force_2 = self.voltage_int2 - self.voltage_offset_1#self.mean_2 # a * self.force_2 + (1-a) * (self.voltage_int2 - self.mean_2)
-
-        if abs(self.joystick_force_1) < self.force_threshold:
+        # compute force from joystick / delete voltage noise by thresholding
+        if abs(delta_voltage_1) < self.voltage_threshold:
             self.joystick_force_1 = 0.0
-        if abs(self.joystick_force_2) < self.force_threshold:
+        else:
+            self.joystick_force_1 = self.factor_1 * delta_voltage_1
+        if abs(delta_voltage_2) < self.voltage_threshold:
             self.joystick_force_2 = 0.0
+        else:
+            self.joystick_force_2 = self.factor_2 * delta_voltage_2
 
+        # compute damping force
+        b1 = 0.00 # todo: damping ros parameter
+        b2 = 5.00
         damping_force_1 = -sign_float(self.cmd.linear.x) * b1 # - self.cmd.linear.x * b1
         damping_force_2 = -sign_float(self.cmd.angular.z) * b2  #- self.cmd.angular.z * b2
 
-        # todo: how to handle damping?
-        force_sum_1 = self.joystick_force_1 #+ damping_force_1
-        force_sum_2 = self.joystick_force_2 #+ damping_force_2
+        # add forces
+        force_sum_1 = self.joystick_force_1 + damping_force_1
+        force_sum_2 = self.joystick_force_2 + damping_force_2
 
+        # compute delta from force
         v_old = self.cmd.linear.x
         omega_old = self.cmd.angular.z
+        delta_v = force_sum_1 * self.timer_period # todo: add inertia factor?
+        delta_omega = force_sum_2 * self.timer_period
 
-        delta_v = self.timer_period * self.factor_1 * force_sum_1
-        delta_omega = self.timer_period * self.factor_2 * force_sum_2
-
-        # threshold
+        # threshold for changes in cmd_vel
         if delta_v > 0.01:
             self.cmd.linear.x = v_old + delta_v
         else:
             self.cmd.linear.x = v_old
-
-        if delta_omega > 0.01:
+        if delta_omega > 0.005:
             self.cmd.angular.z = omega_old + delta_omega
         else:
             self.cmd.angular.z = omega_old
 
-
         self.publisher_.publish(self.cmd)
 
-        # todo: delte (debugging)
+        # todo: delete (debugging)
         joystick_force1 = Float32()
         joystick_force1.data = float(self.joystick_force_1)
         self.publisher_f1_.publish(joystick_force1)
@@ -132,25 +128,14 @@ class CommandVelocityFromForcesPublisher(Node):
 
         # todo: change offset handling
         if self.initial_samples_counter <= self.number_of_initial_samples:
-            #self.zero_value_list_1.append(self.voltage_int1)
-            #self.zero_value_list_2.append(self.voltage_int2)
-            #self.mean_1 = sum(self.zero_value_list_1)/len(self.zero_value_list_1)
-            #self.mean_2 = sum(self.zero_value_list_2)/len(self.zero_value_list_2)
             self.initial_samples_counter = self.initial_samples_counter+1
 
             if self.initial_samples_counter == 10:
                 self.get_logger().info(f'running')
 
             if self.initial_samples_counter == self.number_of_initial_samples:
-            #self.get_logger().info(f'mean_1: {self.mean_1}')
-            #self.get_logger().info(f'mean_2: {self.mean_2}')
-
                 self.get_logger().info(f'voltage1 - mean1: {self.voltage_int1 - self.voltage_offset_1}')
                 self.get_logger().info(f'voltage2 - mean2: {self.voltage_int2 - self.voltage_offset_2}')
-
-
-
-        # self.get_logger().info(f'cmd.linear.x start: {self.cmd.linear.x}')
 
 
 def main(args=None):
