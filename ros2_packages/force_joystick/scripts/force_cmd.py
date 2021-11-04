@@ -95,7 +95,7 @@ class CommandVelocityFromForcesPublisher(Node):
         b1 = 0.00 # todo: damping ros parameter
         b2 = 5.00
         damping_force_1 = 0.0 # todo: v near zero -> stop
-        damping_force_2 = sign_float(self.cmd.angular.z) * abs(self.cmd.angular.z) * b2 # todo: use quadratic function?
+        damping_force_2 = -sign_float(self.cmd.angular.z) * abs(self.cmd.angular.z) * b2 # todo: use quadratic function?
 
         # add forces
         force_sum_1 = self.joystick_force_1 + damping_force_1
