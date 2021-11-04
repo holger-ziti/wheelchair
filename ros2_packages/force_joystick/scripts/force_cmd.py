@@ -50,8 +50,8 @@ class CommandVelocityFromForcesPublisher(Node):
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
 
         self.cmd = Twist()
-        self.force_1 = 0.0
-        self.force_2 = 0.0
+        self.joystick_force_1 = 0.0
+        self.joystick_force_2 = 0.0
 
         self.voltage_int1 = 0
         self.voltage_int2 = 0
@@ -86,34 +86,43 @@ class CommandVelocityFromForcesPublisher(Node):
         b1 = 0.50 # damping parameter
         b2 = 0.50
 
-        self.force_1 = self.voltage_int1 - self.voltage_offset_1#self.mean_1 # a * self.force_1 + (1-a) * (self.voltage_int1 - self.mean_1)
-        self.force_2 = self.voltage_int2 - self.voltage_offset_1#self.mean_2 # a * self.force_2 + (1-a) * (self.voltage_int2 - self.mean_2)
+        self.joystick_force_1 = self.voltage_int1 - self.voltage_offset_1#self.mean_1 # a * self.force_1 + (1-a) * (self.voltage_int1 - self.mean_1)
+        self.joystick_force_2 = self.voltage_int2 - self.voltage_offset_1#self.mean_2 # a * self.force_2 + (1-a) * (self.voltage_int2 - self.mean_2)
 
-        if abs(self.force_1) < self.force_threshold:
-            self.force_1 = 0.0
-        if abs(self.force_2) < self.force_threshold:
-            self.force_2 = 0.0
+        if abs(self.joystick_force_1) < self.force_threshold:
+            self.joystick_force_1 = 0.0
+        if abs(self.joystick_force_2) < self.force_threshold:
+            self.joystick_force_2 = 0.0
 
         damping_force_1 = -sign_float(self.cmd.linear.x) * b1 # - self.cmd.linear.x * b1
         damping_force_2 = -sign_float(self.cmd.angular.z) * b2  #- self.cmd.angular.z * b2
 
-        self.cmd.linear.x = self.cmd.linear.x + self.timer_period * self.factor_1 * (self.force_1 + damping_force_1)
-        self.cmd.angular.z = self.cmd.angular.z + self.timer_period * self.factor_2 * (self.force_2 + damping_force_2)
+        force_sum_1 = self.joystick_force_1 + damping_force_1
+        force_sum_2 = self.joystick_force_2 + damping_force_2
 
-        # self.cmd.linear.x = (self.force_1 - self.mean_1) * 0.01
-        # self.cmd.angular.z = (self.force_2 - self.mean_2) * 0.01
+        v_old = self.cmd.linear.x
+        omega_old = self.cmd.angular.z
 
-        # do not publish noise values
-        # if abs(self.cmd.linear.x) < 0.1:
-        #    self.cmd.linear.x = 0.0
-        # if abs(self.cmd.angular.z) < 0.1:
-        #    self.cmd.angular.z = 0.0
+        delta_v = self.timer_period * self.factor_1 * force_sum_1
+        delta_omega = self.timer_period * self.factor_2 * force_sum_2
+
+        # threshold
+        if delta_v > 0.1:
+            self.cmd.linear.x = v_old + delta_v
+        else:
+            self.cmd.linear.x = v_old
+
+        if delta_omega > 0.1:
+            self.cmd.angular.z = omega_old + delta_omega
+        else:
+            self.cmd.angular.z = omega_old
+
 
         self.publisher_.publish(self.cmd)
 
         # todo: delte (debugging)
         joystick_force1 = Float32()
-        joystick_force1.data = float(self.force_1)
+        joystick_force1.data = float(self.joystick_force_1)
         self.publisher_f1_.publish(joystick_force1)
 
         damping_force1 = Float32()
@@ -127,6 +136,9 @@ class CommandVelocityFromForcesPublisher(Node):
             #self.mean_1 = sum(self.zero_value_list_1)/len(self.zero_value_list_1)
             #self.mean_2 = sum(self.zero_value_list_2)/len(self.zero_value_list_2)
             self.initial_samples_counter = self.initial_samples_counter+1
+
+            if self.initial_samples_counter == 10:
+                self.get_logger().info(f'running')
 
             if self.initial_samples_counter == self.number_of_initial_samples:
             #self.get_logger().info(f'mean_1: {self.mean_1}')
