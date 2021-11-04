@@ -42,10 +42,10 @@ class CommandVelocityFromForcesPublisher(Node):
         self.publisher_ = self.create_publisher(Twist, 'cmd_vel', 10)
 
         # todo: delete (just for debugging)
-        self.publisher_f1_ = self.create_publisher(Float32, 'force1', 10)
-        self.publisher_f2_ = self.create_publisher(Float32, 'force2', 10)
-        self.publisher_d1_ = self.create_publisher(Float32, 'damping_force1', 10)
-        self.publisher_d2_ = self.create_publisher(Float32, 'damping_force2', 10)
+        self.publisher_f1_ = self.create_publisher(Float32, 'joystick_force_1', 10)
+        self.publisher_f2_ = self.create_publisher(Float32, 'joystick_force_2', 10)
+        self.publisher_d1_ = self.create_publisher(Float32, 'damping_force_1', 10)
+        self.publisher_d2_ = self.create_publisher(Float32, 'damping_force_2', 10)
 
         # publish cmd_vel with a fixed frequency
         self.timer_period = 0.01  # seconds
@@ -95,7 +95,7 @@ class CommandVelocityFromForcesPublisher(Node):
         b1 = 0.00 # todo: damping ros parameter
         b2 = 5.00
         damping_force_1 = -sign_float(self.cmd.linear.x) * b1
-        damping_force_2 = -sign_float(self.cmd.angular.z) * b2
+        damping_force_2 = self.cmd.angular.z * b2 # todo: use quadratic function?
 
         # add forces
         force_sum_1 = self.joystick_force_1 + damping_force_1
