@@ -38,7 +38,7 @@ class CommandVelocityFromForcesPublisher(Node):
             10)
 
 
-
+        self.publish_cmd_vel = False
         self.publisher_ = self.create_publisher(Twist, 'cmd_vel', 10)
 
         # todo: delete (just for debugging)
@@ -110,17 +110,18 @@ class CommandVelocityFromForcesPublisher(Node):
         delta_v = force_sum_1 * self.timer_period # todo: add inertia factor?
         delta_omega = force_sum_2 * self.timer_period
 
-        # threshold for changes in cmd_vel
-        if abs(delta_v) > 0.005:
-            self.cmd.linear.x = v_old + delta_v
-        else:
-            self.cmd.linear.x = v_old
-        if abs(delta_omega) > 0.005:
-            self.cmd.angular.z = omega_old + delta_omega
-        else:
-            self.cmd.angular.z = omega_old
+        if self.publish_cmd_vel:
+            # threshold for changes in cmd_vel
+            if abs(delta_v) > 0.005:
+                self.cmd.linear.x = v_old + delta_v
+            else:
+                self.cmd.linear.x = v_old
+            if abs(delta_omega) > 0.005:
+                self.cmd.angular.z = omega_old + delta_omega
+            else:
+                self.cmd.angular.z = omega_old
 
-        self.publisher_.publish(self.cmd)
+            self.publisher_.publish(self.cmd)
 
         # todo: delete (debugging)
         joystick_force1 = Float32()
@@ -143,7 +144,8 @@ class CommandVelocityFromForcesPublisher(Node):
             if self.initial_samples_counter == self.number_of_initial_samples:
                 self.get_logger().info(f'voltage1 - mean1: {self.voltage_int1 - self.voltage_offset_1}')
                 self.get_logger().info(f'voltage2 - mean2: {self.voltage_int2 - self.voltage_offset_2}')
-                self.get_logger().info(f'running')
+                self.publish_cmd_vel = True
+                self.get_logger().info(f'publishing')
 
 
 def main(args=None):
