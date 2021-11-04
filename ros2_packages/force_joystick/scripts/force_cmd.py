@@ -52,6 +52,9 @@ class CommandVelocityFromForcesPublisher(Node):
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
 
         self.cmd = Twist()
+        self.cmd.linear.x = 0.0
+        self.cmd.angular.z = 0.0
+
         self.joystick_force_1 = 0.0
         self.joystick_force_2 = 0.0
 
