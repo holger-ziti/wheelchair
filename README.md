@@ -57,11 +57,7 @@ ln -s ~/git/mobile_robot_gym/ros2_workspace/src/wheelchair_gazebo ~/dev_ws/src
 ros2 launch wheelchair_gazebo worl
 ```
 
-### reset cmd_vel 
-start and stop teleop_keyboard
-```console
-ros2 run turtlebot3_teleop teleop_keyboard
-```
+
 
 
 

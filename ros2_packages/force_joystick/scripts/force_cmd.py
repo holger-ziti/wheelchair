@@ -19,25 +19,26 @@ class CommandVelocityFromForcesPublisher(Node):
         self.declare_parameter('raw_voltage_number_2', '2')
         self.declare_parameter('voltage_offset_1', '0')
         self.declare_parameter('voltage_offset_2', '0')
-        self.declare_parameter('damping_param_1', '0')
-        self.declare_parameter('damping_param_2', '0')
+        self.declare_parameter('voltage_to_force_factor_1', '0.0')
+        self.declare_parameter('voltage_to_force_factor_2', '0.0')
+        self.declare_parameter('damping_param_1', '0.0')
+        self.declare_parameter('damping_param_2', '0.0')
 
         # https://github.com/ros2/ros2cli/blob/master/ros2param/ros2param/api/__init__.py
         raw_voltage_number_1 = self.get_parameter('raw_voltage_number_1').get_parameter_value().integer_value
         raw_voltage_number_2 = self.get_parameter('raw_voltage_number_2').get_parameter_value().integer_value
-
         self.voltage_offset_1 = self.get_parameter('voltage_offset_1').get_parameter_value().integer_value
         self.voltage_offset_2 = self.get_parameter('voltage_offset_2').get_parameter_value().integer_value
-
-        self.damping_param_1 = self.get_parameter('voltage_offset_1').get_parameter_value().double_value
-        self.damping_param_2 = self.get_parameter('voltage_offset_2').get_parameter_value().double_value
+        self.voltage_to_force_factor_1 = self.get_parameter('voltage_to_force_factor_1').get_parameter_value().double_value
+        self.voltage_to_force_factor_2 = self.get_parameter('voltage_to_force_factor_2').get_parameter_value().double_value
+        self.damping_param_1 = self.get_parameter('damping_param_1').get_parameter_value().double_value
+        self.damping_param_2 = self.get_parameter('damping_param_2').get_parameter_value().double_value
 
         self.subscription = self.create_subscription(
             Int32,
             f'raw_voltage_{raw_voltage_number_1}',
             self.listener_callback_1,
             10)
-
         self.subscription = self.create_subscription(
             Int32,
             f'raw_voltage_{raw_voltage_number_2}',
@@ -68,9 +69,7 @@ class CommandVelocityFromForcesPublisher(Node):
         self.voltage_int1 = 0
         self.voltage_int2 = 0
 
-        # todo: ros param
-        self.voltage_to_force_factor_1 = 0.1 # "force to velocity"
-        self.voltage_to_force_factor_2 = 0.5 # "force to velocity"
+
 
         self.voltage_threshold = 25.0
 
@@ -122,12 +121,20 @@ class CommandVelocityFromForcesPublisher(Node):
                 self.cmd.linear.x = v_old + delta_v
             else:
                 self.cmd.linear.x = v_old
-            if abs(delta_omega) > 0.005:
-                self.cmd.angular.z = omega_old + delta_omega
-            else:
-                self.cmd.angular.z = omega_old
+            #if abs(delta_omega) > 0.005:
+            #    self.cmd.angular.z = omega_old + delta_omega
+            #else:
+            #    self.cmd.angular.z = omega_old
 
+            self.cmd.angular.z = 2.0 * self.joystick_force_2 * abs(self.cmd.linear.x*4.0) # todo: velocity (NOT: force)
+            self.get_logger().info(f'publishing non-zero')
             self.publisher_.publish(self.cmd)
+        else:
+            cmd0 = Twist()
+            cmd0.linear.x = 0.0
+            cmd0.angular.z = 0.0
+            self.get_logger().info(f'publishing zero')
+            self.publisher_.publish(cmd0)
 
         # todo: delete (debugging)
         joystick_force1 = Float32()
