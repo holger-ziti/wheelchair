@@ -106,11 +106,11 @@ class CommandVelocityFromForcesPublisher(Node):
         delta_omega = force_sum_2 * self.timer_period
 
         # threshold for changes in cmd_vel
-        if delta_v > 0.005:
+        if abs(delta_v) > 0.005:
             self.cmd.linear.x = v_old + delta_v
         else:
             self.cmd.linear.x = v_old
-        if delta_omega > 0.005:
+        if abs(delta_omega) > 0.005:
             self.cmd.angular.z = omega_old + delta_omega
         else:
             self.cmd.angular.z = omega_old
