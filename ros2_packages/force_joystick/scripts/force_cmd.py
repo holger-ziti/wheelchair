@@ -126,14 +126,13 @@ class CommandVelocityFromForcesPublisher(Node):
             #else:
             #    self.cmd.angular.z = omega_old
 
-            self.cmd.angular.z = 2.0 * self.joystick_force_2 * abs(self.cmd.linear.x*4.0) # todo: velocity (NOT: force)
-            self.get_logger().info(f'publishing non-zero')
+            # todo: velocity (NOT: force)
+            self.cmd.angular.z = 2.0 * self.joystick_force_2 #* abs(self.cmd.linear.x*4.0)
             self.publisher_.publish(self.cmd)
         else:
             cmd0 = Twist()
             cmd0.linear.x = 0.0
             cmd0.angular.z = 0.0
-            self.get_logger().info(f'publishing zero')
             self.publisher_.publish(cmd0)
 
         # todo: delete (debugging)

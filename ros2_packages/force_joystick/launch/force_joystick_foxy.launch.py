@@ -7,7 +7,7 @@ def generate_launch_description():
     node1 = Node(
             package='force_joystick',
             executable='force_cmd.py',
-            name='test3',
+            name='force_cmd',
             parameters=[
                 {'raw_voltage_number_1': 1},
                 {'raw_voltage_number_2': 0},

@@ -6,26 +6,6 @@ def generate_launch_description():
 
     node1 = Node(
             package='force_joystick',
-            node_executable='voltage',
-            node_name='analog_voltage_reader_1',
-            parameters=[
-                {'analog_input_number': 0}
-            ],
-            output='screen',
-            emulate_tty=True
-        )
-    node2 = Node(
-            package='force_joystick',
-            node_executable='voltage',
-            node_name='analog_voltage_reader_2',
-            parameters=[
-                {'analog_input_number': 1}
-            ],
-            output='screen',
-            emulate_tty=True
-        )
-    node3 = Node(
-            package='force_joystick',
             node_executable='force_cmd.py',
             node_name='test3',
             parameters=[
@@ -42,6 +22,4 @@ def generate_launch_description():
             emulate_tty=True
         )
     ld.add_action(node1)
-    ld.add_action(node2)
-    ld.add_action(node3)
     return ld

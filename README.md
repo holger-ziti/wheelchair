@@ -21,11 +21,7 @@ git pull
 
 ### source
 ```console
-source /home/debian/ros2_eloquent/setup.bash
-source /home/debian/ros2_eloquent/local_setup.bash
-source /home/debian/ws/install/local_setup.bash
-source /home/debian/ws/install/setup.bash
-export ROS_DOMAIN_ID=100
+source ~/scripts/ros2_ssh.sh
 ```
 
 ### build code (maybe twice)
@@ -46,7 +42,7 @@ ros2 launch force_joystick two_analog_in_eloquent.launch.py
 ### use joystick for sim
 
 ```console
-ros2 launch turtlebot3_gazebo empty_world.launch.py
+ros2 launch force_joystick nch.py
 ```
 
 ### wheelchair sim (PC)
@@ -58,7 +54,8 @@ ros2 launch wheelchair_gazebo worl
 ```
 
 
-
+### set topic /cmd_vel to zero
+ros2 topic pub --once /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}'
 
 
  
