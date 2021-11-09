@@ -42,7 +42,13 @@ ros2 launch force_joystick two_analog_in_eloquent.launch.py
 ### use joystick for sim
 
 ```console
-ros2 launch force_joystick nch.py
+ros2 launch force_joystick force_joystick_foxy.launch.py
+```
+
+
+### wheelchair simulation
+```console
+ros2 launch force_joystick wheelchair_gazebo_ziti_floor.launch.py
 ```
 
 ### wheelchair sim (PC)

@@ -54,10 +54,6 @@ public:
     rclcpp::Parameter int_param = this->get_parameter("analog_input_number");
     int my_int = int_param.as_int();
     
-    //this->declare_parameter("analog_input_number");
-    //rclcpp::Parameter int_analog_input_number = this->get_parameter("analog_input_number");
-    //int an_in_int = int_analog_input_number.as_int();
-    
     publisher_ = this->create_publisher<std_msgs::msg::Int32>("raw_voltage_"+ std::to_string(my_int), 1);
     timer_ = this->create_wall_timer(
       10ms, std::bind(&AnalogInPublisher::timer_callback, this));
@@ -66,16 +62,8 @@ public:
 
   }
   
-//  void respond()
-//    {
-//      this->get_parameter("analog_input_number", int_analog_input_number);
-//      RCLCPP_INFO(this->get_logger(), "Hello %s", int_analog_input_number.value_to_string().c_str());
-//    }
-
 
 private:
-
-  //std::int analog_input_number_int_;
 
   void timer_callback()
   {
