@@ -46,7 +46,7 @@ class CommandVelocityFromForcesPublisher(Node):
             10)
 
 
-        self.publish_cmd_vel = False
+
         self.publisher_ = self.create_publisher(Twist, 'cmd_vel', 10)
 
         # todo: delete (just for debugging)
@@ -59,17 +59,16 @@ class CommandVelocityFromForcesPublisher(Node):
         self.timer_period = 0.01  # seconds
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
 
+        # initial values
         self.cmd = Twist()
         self.cmd.linear.x = 0.0
         self.cmd.angular.z = 0.0
-
         self.joystick_force_1 = 0.0
         self.joystick_force_2 = 0.0
-
         self.voltage_int1 = 0
         self.voltage_int2 = 0
 
-
+        self.travel = False
 
         self.voltage_threshold = 25.0
 
@@ -77,13 +76,20 @@ class CommandVelocityFromForcesPublisher(Node):
         self.number_of_initial_samples = 100
         self.initial_samples_counter = 0
 
+        self.publish_cmd_vel = False
+        self.number_of_values_from_cb1 = 0 # make sure there were some messages on the topic
+        self.number_of_values_from_cb2 = 0
+        self.min_number_of_values = 10
+
     def listener_callback_1(self, msg):
         #self.get_logger().info('I heard: "%s"' % msg.data)
         self.voltage_int1 = msg.data
+        self.number_of_values_from_cb1 += 1 # count messages to make sure data is available
 
     def listener_callback_2(self, msg):
         #self.get_logger().info('I heard: "%s"' % msg.data)
         self.voltage_int2 = msg.data
+        self.number_of_values_from_cb2 += 1 # count messages to make sure data is available
 
     def timer_callback(self):
 
@@ -91,7 +97,7 @@ class CommandVelocityFromForcesPublisher(Node):
         delta_voltage_1 = self.voltage_int1 - self.voltage_offset_1
         delta_voltage_2 = self.voltage_int2 - self.voltage_offset_2
 
-        # compute force from joystick / delete voltage noise by thresholding
+        # compute force from joystick (delete voltage noise by thresholding)
         if abs(delta_voltage_1) < self.voltage_threshold:
             self.joystick_force_1 = 0.0
         else:
@@ -103,24 +109,37 @@ class CommandVelocityFromForcesPublisher(Node):
 
         # compute damping force
         damping_force_1 = 0.0 # todo: v near zero -> stop
-        damping_force_2 = -sign_float(self.cmd.angular.z) * abs(self.cmd.angular.z) * self.damping_param_2 # todo: use quadratic function?
-
+        damping_force_2 = 0.0 # -sign_float(self.cmd.angular.z) * abs(self.cmd.angular.z) * self.damping_param_2 # todo: use quadratic function?
         # add forces
         force_sum_1 = self.joystick_force_1 + damping_force_1
         force_sum_2 = self.joystick_force_2 + damping_force_2
 
         # compute delta from force
+        # - integrate F_forward/backward for v
+        # - scale F_left/right for omega
         v_old = self.cmd.linear.x
-        omega_old = self.cmd.angular.z
         delta_v = force_sum_1 * self.timer_period # todo: add inertia factor?
-        delta_omega = force_sum_2 * self.timer_period
-
+        #omega_old = self.cmd.angular.z
+        #delta_omega = force_sum_2 * self.timer_period
         if self.publish_cmd_vel:
             # threshold for changes in cmd_vel
-            if abs(delta_v) > 0.005:
-                self.cmd.linear.x = v_old + delta_v
+            #if abs(delta_v) > 0.005: 
+            #    self.cmd.linear.x = # v_old + delta_v 
+            #else:
+            #    self.cmd.linear.x = 0.0 # v_old
+            if self.joystick_force_1 > 0.5:
+                self.cmd.linear.x = 1.0
+                self.travel = True
+            if self.joystick_force_1 < -0.5:
+                self.cmd.linear.x = 0.0
+                self.travel = False
+            if 0.05 <= self.joystick_force_1  <= 0.5 and (self.travel != True):
+                self.cmd.linear.x = 2 * self.joystick_force_1
             else:
-                self.cmd.linear.x = v_old
+                self.cmd.linear.x = 0.0
+
+            if self.travel:
+                self.cmd.linear.x = 1.0
             #if abs(delta_omega) > 0.005:
             #    self.cmd.angular.z = omega_old + delta_omega
             #else:
@@ -129,11 +148,17 @@ class CommandVelocityFromForcesPublisher(Node):
             # todo: velocity (NOT: force)
             self.cmd.angular.z = 2.0 * self.joystick_force_2 #* abs(self.cmd.linear.x*4.0)
             self.publisher_.publish(self.cmd)
+
         else:
             cmd0 = Twist()
-            cmd0.linear.x = 0.0
-            cmd0.angular.z = 0.0
+            #cmd0.linear.x = 0.0
+            #cmd0.linear.y = 0.0
+            #cmd0.linear.z = 0.0
+            #cmd0.angular.x = 0.0
+            #cmd0.angular.y = 0.0
+            #cmd0.angular.z = 0.0
             self.publisher_.publish(cmd0)
+
 
         # todo: delete (debugging)
         joystick_force1 = Float32()
@@ -153,7 +178,10 @@ class CommandVelocityFromForcesPublisher(Node):
         # info: running properly?
         if self.initial_samples_counter <= self.number_of_initial_samples:
             self.initial_samples_counter = self.initial_samples_counter+1
-            if self.initial_samples_counter == self.number_of_initial_samples:
+        if self.initial_samples_counter >= self.number_of_initial_samples:
+            if (self.number_of_values_from_cb1 >= self.min_number_of_values) \
+                    and (self.number_of_values_from_cb2 >= self.min_number_of_values)\
+                    and self.publish_cmd_vel == False:
                 self.get_logger().info(f'voltage1 - mean1: {self.voltage_int1 - self.voltage_offset_1}')
                 self.get_logger().info(f'voltage2 - mean2: {self.voltage_int2 - self.voltage_offset_2}')
                 self.publish_cmd_vel = True

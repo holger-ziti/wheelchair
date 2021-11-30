@@ -23,13 +23,17 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
+find_package(joy REQUIRED)
 
 # Include Cpp "include" directory
 include_directories(include)
 
 install(DIRECTORY
   launch
+  config
   DESTINATION share/${PROJECT_NAME}
 )
 
@@ -37,11 +41,14 @@ install(DIRECTORY
 # Create Cpp executable
 add_executable(voltage src/analog_in_pub.cpp)
 ament_target_dependencies(voltage rclcpp std_msgs)
+add_executable(tracking src/point_tracking.cpp)
+ament_target_dependencies(tracking rclcpp std_msgs sensor_msgs visualization_msgs)
 
 
 # Install Cpp executables
 install(TARGETS
   voltage
+  tracking
   DESTINATION lib/${PROJECT_NAME})
 
 
@@ -53,6 +60,7 @@ ament_python_install_package(${PROJECT_NAME})
 # Install Python executables
 install(PROGRAMS
   scripts/force_cmd.py
+  scripts/joy_sim.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

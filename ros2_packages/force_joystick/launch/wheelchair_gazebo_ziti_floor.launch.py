@@ -18,10 +18,10 @@ def generate_launch_description():
             'fourth_level.world'))
     use_sim_time = LaunchConfiguration('use_sim_time', default='true') 
         
-    world_launch = os.path.join(
-        get_package_share_directory('wheelchair_gazebo'), 
+    simulation_launch = os.path.join(
+        get_package_share_directory('wheelchair_gazebo'),
         'launch',
-        'world.launch.py')     
+        'simulation.launch.py')
 
         
     os.environ['GAZEBO_MODEL_PATH'] = os.path.join(
@@ -30,7 +30,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(world_launch),
+            PythonLaunchDescriptionSource(simulation_launch),
             launch_arguments={'world': world, 'use_sim_time': use_sim_time}.items(),
         ),
 
