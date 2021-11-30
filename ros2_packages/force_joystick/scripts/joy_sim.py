@@ -11,10 +11,10 @@ from sensor_msgs.msg import Joy
 
 from matplotlib.animation import FuncAnimation
 
-class SimulationFromPositionJoystick(Node):
+class SimulationForJoystick(Node):
 
     def __init__(self):
-        super().__init__('simulation_from_position_joystick')
+        super().__init__('simulation_for_joystick')
 
         # default parameter values
         #self.declare_parameter('raw_voltage_number_1', '1')
@@ -45,6 +45,8 @@ class SimulationFromPositionJoystick(Node):
             'joy',
             self.joy_callback,
             10)
+
+        self.ref_publisher = self.create_publisher(Float32, 'sim_reference', 10)
 
     def compute_new_random_index(self):
         if self.rand_index == 0:
@@ -80,6 +82,8 @@ class SimulationFromPositionJoystick(Node):
         #self.get_logger().info(f'possible_x: {possible_x}, possible_y: {possible_y}')
 
         self.js_point.set_data(self.x, self.y)
+
+
         return self.line, self.circles, self.js_point
 
     def animate(self):
@@ -100,12 +104,17 @@ class SimulationFromPositionJoystick(Node):
         if msg.header.stamp.sec - self.last_second >= self.n_seconds:
             self.last_second = msg.header.stamp.sec
             self.compute_new_random_index()
+        #reference_value = self.possible_values[self.rand_index]
+        #self.get_logger().info(f'reference_value: {reference_value}')
+        reference_value = Float32()
+        reference_value.data = self.possible_values[self.rand_index]
+        self.ref_publisher.publish(reference_value)
 
 def main(args=None):
 
     rclpy.init(args=args)
 
-    node = SimulationFromPositionJoystick()
+    node = SimulationForJoystick()
     try:
         spin_thread = threading.Thread(target=rclpy.spin, args=(node,))
         spin_thread.start()
