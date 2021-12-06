@@ -7,13 +7,7 @@ ssh debian@b3-aut11
 cd ~/git
 ```
 
-### first time: get code
-```console
-git clone https://github.com/holger-ziti/wheelchair.git
-ln -s ~/git/wheelchair/ros2_packages/force_joystick ~/ws/src
-```
-
-### update code
+### relevant code changes
 ```console
 cd ~/git/wheelchair
 git pull
@@ -31,6 +25,9 @@ colcon build --packages-select force_joystick
 ```
 
 ### run code
+This is the default code to run on BBB. 
+Force joystick orientation: black cable pointing to the user.
+Forces to the left: positive value for axes[0] (to the right: negative)
 ```console
 ros2 launch force_joystick two_analog_in_eloquent.launch.py
 ```

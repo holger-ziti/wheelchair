@@ -63,10 +63,9 @@ class Force2JoyPublisher(Node):
 
         self.voltage_threshold = 25.0
 
-        # todo: change offset handling
-        self.number_of_initial_samples = 100
-        self.initial_samples_counter = 0
 
+        #self.number_of_initial_samples = 100
+        #self.initial_samples_counter = 0
         self.publish_joy = False
         self.number_of_values_from_cb1 = 0 # make sure there were some messages on the topic
         self.number_of_values_from_cb2 = 0
@@ -101,7 +100,7 @@ class Force2JoyPublisher(Node):
 
 
         self.joy = Joy()
-        self.joy.header = Header()
+        #self.joy.header = Header()
         self.joy.header.stamp = self.get_clock().now().to_msg()
         v1 = Float32()
         v1 = float(self.joystick_force_1)
@@ -114,7 +113,7 @@ class Force2JoyPublisher(Node):
             self.publisher_.publish(self.joy)
 
 
-        # todo: delete (debugging)
+        # todo: delete (just for debugging)
         joystick_force1 = Float32()
         joystick_force1.data = float(self.joystick_force_1)
         self.publisher_f1_.publish(joystick_force1)
@@ -122,15 +121,13 @@ class Force2JoyPublisher(Node):
         joystick_force2.data = float(self.joystick_force_2)
         self.publisher_f2_.publish(joystick_force2)
 
-
-
-        # info: running properly?
-        if self.initial_samples_counter <= self.number_of_initial_samples:
-            self.initial_samples_counter = self.initial_samples_counter+1
-        if self.initial_samples_counter >= self.number_of_initial_samples:
-            if (self.number_of_values_from_cb1 >= self.min_number_of_values) \
-                    and (self.number_of_values_from_cb2 >= self.min_number_of_values)\
-                    and self.publish_joy == False:
+        # start publishing non-zero values, if running properly?
+        #if self.initial_samples_counter <= self.number_of_initial_samples:
+        #    self.initial_samples_counter = self.initial_samples_counter+1
+        #if self.initial_samples_counter >= self.number_of_initial_samples:
+        if (self.number_of_values_from_cb1 >= self.min_number_of_values) \
+            and (self.number_of_values_from_cb2 >= self.min_number_of_values) \
+            and self.publish_joy == False:
                 self.get_logger().info(f'voltage1 - mean1: {self.voltage_int1 - self.voltage_offset_1}')
                 self.get_logger().info(f'voltage2 - mean2: {self.voltage_int2 - self.voltage_offset_2}')
                 self.publish_joy = True
@@ -139,15 +136,11 @@ class Force2JoyPublisher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-
+    
     force_to_joy_publisher = Force2JoyPublisher()
-
     rclpy.spin(force_to_joy_publisher)
-
-    # Destroy the node explicitly (optional - otherwise it will be done automatically when the garbage collector destroys the node object)
     force_to_joy_publisher.destroy_node()
     rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()

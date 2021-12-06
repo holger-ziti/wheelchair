@@ -46,7 +46,7 @@ class SimulationForJoystick(Node):
             self.joy_callback,
             10)
 
-        self.ref_publisher = self.create_publisher(Float32, 'sim_reference', 10)
+        self.ref_publisher = self.create_publisher(Joy, 'joy_ref', 10)
 
     def compute_new_random_index(self):
         if self.rand_index == 0:
@@ -75,14 +75,14 @@ class SimulationForJoystick(Node):
         return self.line, self.circles, self.js_point
 
     def an_animate(self, frame):
-        #self.get_logger().info(f'start animate')
+
         possible_x = self.possible_values[self.rand_index] #np.sin(self.possible_values[self.rand_index])
         possible_y = np.zeros(possible_x.shape) # np.cos(self.possible_values[self.rand_index])
-        self.circles.set_data(possible_x, possible_y)
+
+        # joystick movement (left: positive) are inverse to the graphical plot (left: negative) -> invert
+        self.circles.set_data(-possible_x, possible_y)
+        self.js_point.set_data(-self.x, self.y)
         #self.get_logger().info(f'possible_x: {possible_x}, possible_y: {possible_y}')
-
-        self.js_point.set_data(self.x, self.y)
-
 
         return self.line, self.circles, self.js_point
 
@@ -97,7 +97,7 @@ class SimulationForJoystick(Node):
         plt.show()
 
     def joy_callback(self, msg):
-        self.x = -msg.axes[0]
+        self.x = msg.axes[0]
         self.y = 0 # msg.axes[1]
         #self.get_logger().info(f'head: {msg.header.stamp.sec}')
 
@@ -106,9 +106,15 @@ class SimulationForJoystick(Node):
             self.compute_new_random_index()
         #reference_value = self.possible_values[self.rand_index]
         #self.get_logger().info(f'reference_value: {reference_value}')
-        reference_value = Float32()
-        reference_value.data = self.possible_values[self.rand_index]
-        self.ref_publisher.publish(reference_value)
+        joy_reference = Joy()
+        joy_reference.header.stamp = self.get_clock().now().to_msg()
+        v1 = Float32()
+        v1 = float(self.possible_values[self.rand_index])
+        v2 = Float32()
+        v2 = float(0)
+        joy_reference.axes.append(v1)
+        joy_reference.axes.append(v2)
+        self.ref_publisher.publish(joy_reference)
 
 def main(args=None):
 
