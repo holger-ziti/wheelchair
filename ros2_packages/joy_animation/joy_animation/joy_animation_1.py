@@ -11,7 +11,7 @@ from sensor_msgs.msg import Joy
 
 from matplotlib.animation import FuncAnimation
 
-class SimulationForJoystick(Node):
+class JoyAnimation1(Node):
 
     def __init__(self):
         super().__init__('simulation_for_joystick')
@@ -120,7 +120,7 @@ def main(args=None):
 
     rclpy.init(args=args)
 
-    node = SimulationForJoystick()
+    node = JoyAnimation1()
     try:
         spin_thread = threading.Thread(target=rclpy.spin, args=(node,))
         spin_thread.start()

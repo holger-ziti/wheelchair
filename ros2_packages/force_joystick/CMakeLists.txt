@@ -61,7 +61,6 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
   scripts/force_cmd.py
   scripts/force2joy.py
-  scripts/joy_sim.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

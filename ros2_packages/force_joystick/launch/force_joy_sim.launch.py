@@ -27,9 +27,9 @@ def generate_launch_description():
 
 
     joy_sim_node = Node(
-            package='force_joystick',
-            executable='joy_sim.py',
-            name='joy_sim'
+            package='joy_animation',
+            executable='animation_1',
+            name='animation_1'
         )
         
     ld.add_action(include1)

@@ -1,65 +1,60 @@
 # wheelchair
-code related to the wheelchair research platform 
+pratical information using BBB. 
 
-### ssh into BBB
+## ROS2 code is auto-started on boot
+see
+```console
+~/scripts/ros2_curtis_run.sh
+```
+
+in general, when working via ssh, source via bash script:
+```console
+source ~/scripts/ros2_ssh.sh
+```
+
+After that, you can "see" the active topics etc.  
+For example:
+```console
+ros2 topic list
+```
+
+
+### via ziti lan
+ssh into BBB (PW: Debian2020)
 ```console
 ssh debian@b3-aut11
 cd ~/git
 ```
 
-### relevant code changes
+
+
+### via router on ottobock
+IP?
+
+
+
+
+
+
+## Notes / Todos
+- set topic /cmd_vel to zero
 ```console
-cd ~/git/wheelchair
-git pull
-```
-
-### source
-```console
-source ~/scripts/ros2_ssh.sh
-```
-
-### build code (maybe twice)
-```console
-cd ~/ws
-colcon build --packages-select force_joystick
-```
-
-### run code
-This is the default code to run on BBB. 
-Force joystick orientation: black cable pointing to the user.
-Forces to the left: positive value for axes[0] (to the right: negative)
-```console
-ros2 launch force_joystick two_analog_in_eloquent.launch.py
-```
-
-### do nothing for 30 sec
- - offset is calculated
- - cmd_vel needs some time
- 
-### use joystick for sim
-
-```console
-ros2 launch force_joystick force_joystick_foxy.launch.py
-```
-
-
-### wheelchair simulation
-```console
-ros2 launch force_joystick wheelchair_gazebo_ziti_floor.launch.py
-```
-
-### wheelchair sim (PC)
- - schwarzes kabel am kraftsensor nach hinten
-```console
-git clone https://github.com/5i0770/mobile_robot_gym.git
-ln -s ~/git/mobile_robot_gym/ros2_workspace/src/wheelchair_gazebo ~/dev_ws/src
-ros2 launch wheelchair_gazebo worl
-```
-
-
-### set topic /cmd_vel to zero
 ros2 topic pub --once /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}'
+```
+- show all active IPs (router on ottobock)
+```console
+nmap -sP 10.0.0.0/24
+```
 
+- copy folders via ssh
+1) If you want to copy a directory from machine a to b while logged into a:
+```console
+scp -r /path/to/directory user@ipaddress:/path/to/destination
+```
+2) If you want to copy a directory from machine a to b while logged into b:
+```console
+scp -r user@ipaddress:/path/to/directory /path/to/destination
+```
 
  
 
