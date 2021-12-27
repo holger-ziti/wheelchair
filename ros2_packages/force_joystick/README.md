@@ -1,11 +1,16 @@
 # force joystick
 
 
-### relevant code changes
-```console
-cd ~/git/wheelchair
-git pull
-```
+ - code to read the 3D force joystick to ROS2 topics
+ - code to identify (position and force) joystick user dynamics
+
+### nodes
+ - ./force_joystick/src/analog_in_pub.cpp  
+   read the Analog Input to BeagleBoneBlack and publish the raw voltage
+ - ./force_joystick/scripts/force_cmd.py
+   from the raw voltage values (measured force) create a /cmd_vel topi
+   
+
 
 
 ### build code (maybe twice)
@@ -22,9 +27,7 @@ Forces to the left: positive value for axes[0] (to the right: negative)
 ros2 launch force_joystick two_analog_in_eloquent.launch.py
 ```
 
-### do nothing for 30 sec
- - offset is calculated
- - cmd_vel needs some time
+
  
 ### use joystick for sim
 
@@ -39,10 +42,9 @@ ros2 launch force_joystick wheelchair_gazebo_ziti_floor.launch.py
 ```
 
 ### wheelchair sim (PC)
- - schwarzes kabel am kraftsensor nach hinten
+ - schwarzes kabel am kraftsensor nach hinten (<https://github.com/5i0770/wheelchair_gazebo.git>)
+ 
 ```console
-git clone https://github.com/5i0770/mobile_robot_gym.git
-ln -s ~/git/mobile_robot_gym/ros2_workspace/src/wheelchair_gazebo ~/dev_ws/src
-ros2 launch wheelchair_gazebo worl
+ros2 launch wheelchair_gazebo wheelchair_gazebo.launch.py
 ```
 
